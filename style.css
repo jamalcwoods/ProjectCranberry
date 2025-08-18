@@ -1,0 +1,132 @@
+.preview-edge {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 140px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+}
+.preview-edge-left {
+    left: 0;
+}
+.preview-edge-right {
+    right: 0;
+}
+.preview {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.7;
+    z-index: 1;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+.prev-preview {
+    left: 10px;
+}
+.next-preview {
+    right: 10px;
+}
+body {
+    background: #f0f0f0;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#carousel-window {
+    margin-top: 15%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.carousel-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 600px;
+    height: 400px;
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    background: #fff;
+    position: relative;
+}
+
+.carousel img {
+    width: 600px;
+    height: 400px;
+    object-fit: cover;
+    transition: opacity 0.5s;
+    border-radius: 20px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    z-index: 1;
+}
+
+.carousel img.active {
+    opacity: 1;
+    z-index: 2;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.carousel-tracker {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.carousel-btn {
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+    cursor: pointer;
+    margin: 0 20px;
+    transition: background-color 0.2s;
+}
+
+.carousel-btn:hover {
+    background: #555;
+}
+
+#song-info {
+    width: 15%;
+    margin:  auto;
+    margin-top: 18px;
+    text-align: center;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    padding: 18px 32px;
+    font-size: 1.1rem;
+    color: #222;
+    min-width: 220px;
+}
+
+#song-info .song-details strong {
+    color: #b30059;
+    font-weight: bold;
+}
