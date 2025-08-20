@@ -1,3 +1,46 @@
+let images = [];
+let currentIndex = 0;
+
+// Helper: Compute average color of an image for background
+function getAverageColor(imgElement, callback) {
+    const img = new window.Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = imgElement.src;
+    img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let r = 0, g = 0, b = 0, count = 0;
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            r += imageData.data[i];
+            g += imageData.data[i + 1];
+            b += imageData.data[i + 2];
+            count++;
+        }
+        r = Math.round(r / count);
+        g = Math.round(g / count);
+        b = Math.round(b / count);
+        callback([r,g,b]);
+    };
+    img.onerror = function() {
+        callback([255,255,255]);
+    };
+}
+
+// Helper: Get complementary color for UI contrast
+function rgbToComplement(rgb) {
+    const result = rgb;
+    if (!result) return [255,255,255];
+    let r = parseInt(result[0]), g = parseInt(result[1]), b = parseInt(result[2]);
+    r = 255 - r;
+    g = 255 - g;
+    b = 255 - b;
+    return [r,g,b];
+}
+
 
 // Spotify Playlist Carousel: Loads playlistInfo.json, displays album art, and updates UI colors dynamically.
 fetch('playlistInfo.json')
@@ -19,8 +62,8 @@ fetch('playlistInfo.json')
 
         // Set up carousel images
         const carousel = document.getElementById('carousel');
-        let currentIndex = 0;
-        const images = [];
+        
+        
         for (let i = 0; i < trackInfos.length; i++) {
             const img = document.createElement('img');
             img.src = trackInfos[i].image;
@@ -43,53 +86,13 @@ fetch('playlistInfo.json')
         nextPreview.alt = 'Next Image';
         nextEdge.appendChild(nextPreview);
 
-        // Helper: Compute average color of an image for background
-        function getAverageColor(imgElement, callback) {
-            const img = new window.Image();
-            img.crossOrigin = 'Anonymous';
-            img.src = imgElement.src;
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, img.width, img.height);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                let r = 0, g = 0, b = 0, count = 0;
-                for (let i = 0; i < imageData.data.length; i += 4) {
-                    r += imageData.data[i];
-                    g += imageData.data[i + 1];
-                    b += imageData.data[i + 2];
-                    count++;
-                }
-                r = Math.round(r / count);
-                g = Math.round(g / count);
-                b = Math.round(b / count);
-                callback(`rgb(${r},${g},${b})`);
-            };
-            img.onerror = function() {
-                callback('#f0f0f0');
-            };
-        }
-
-        // Helper: Get complementary color for UI contrast
-        function rgbToComplement(rgb) {
-            const result = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(rgb);
-            if (!result) return '#fff';
-            let r = parseInt(result[1]), g = parseInt(result[2]), b = parseInt(result[3]);
-            r = 255 - r;
-            g = 255 - g;
-            b = 255 - b;
-            return `rgb(${r},${g},${b})`;
-        }
-
         // Helper: Choose black or white text for best contrast
         function getContrastYIQ(rgb) {
-            const result = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(rgb);
-            if (!result) return '#222';
-            let r = parseInt(result[1]), g = parseInt(result[2]), b = parseInt(result[3]);
+            const result = rgb;
+            if (!result) return [0,0,0];
+            let r = parseInt(result[0]), g = parseInt(result[1]), b = parseInt(result[2]);
             const yiq = ((r*299)+(g*587)+(b*114))/1000;
-            return (yiq >= 128) ? '#222' : '#fff';
+            return (yiq >= 128) ? [0,0,0] : [255,255,255];
         }
 
         // Update carousel display, previews, song info, and colors
@@ -121,23 +124,36 @@ fetch('playlistInfo.json')
 
             // Dynamically set background and complementary UI colors
             getAverageColor(images[currentIndex], function(color) {
-                document.body.style.background = color;
+                document.body.style.background = `rgb(${color[0]},${color[1]},${color[2]})`;
                 const compColor = rgbToComplement(color);
-                document.getElementById('song-info').style.background = compColor;
-                document.getElementById('song-info').style.color = getContrastYIQ(compColor);
+                document.getElementById('song-info').style.background = `rgb(${compColor[0]},${compColor[1]},${compColor[2]})`;
+                const contrastColor = getContrastYIQ(compColor);
+                document.getElementById('song-info').style.color = `rgb(${contrastColor[0]},${contrastColor[1]},${contrastColor[2]})`;
             });
         }
 
         // Initial carousel display
         updateCarousel();
+        updateSketchColors();
 
-        // Carousel navigation event listeners
+
         document.querySelector('.prev').addEventListener('click', () => {
             currentIndex = (currentIndex - 1 + images.length) % images.length;
+            triggerJump();
             updateCarousel();
+            updateSketchColors();
         });
         document.querySelector('.next').addEventListener('click', () => {
             currentIndex = (currentIndex + 1) % images.length;
+            triggerJump();
             updateCarousel();
+            updateSketchColors();
+        });
+
+        document.querySelector('.prev').addEventListener('mousedown', () => {
+            buttonPressDown();
+        });
+        document.querySelector('.next').addEventListener('mousedown', () => {
+            buttonPressDown();
         });
     });
